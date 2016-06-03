@@ -11,7 +11,7 @@ import Foundation
 extension Reflect{
     
     func toDict() -> [String: Any]{
-       
+        
         var dict: [String: Any] = [:]
         
         self.properties { (name, type, value) -> Void in
@@ -20,7 +20,7 @@ extension Reflect{
                 if type.isReflect {
                     
                     dict[name] = (value as? Reflect)?.toDict()
-                
+                    
                 }else{
                     
                     dict[name] = "\(value)".replacingOccurrencesOfString("Optional(", withString: "").replacingOccurrencesOfString(")", withString: "").replacingOccurrencesOfString("\"", withString: "")
@@ -33,7 +33,7 @@ extension Reflect{
                     if type.isArray {
                         
                         var dictM: [[String: Any]] = []
-                    
+                        
                         let modelArr = value as! NSArray
                         
                         for item in  modelArr {
@@ -46,7 +46,7 @@ extension Reflect{
                         dict[name] = dictM
                         
                     }else{
-                       
+                        
                         dict[name] = (value as! Reflect).toDict()
                     }
                     

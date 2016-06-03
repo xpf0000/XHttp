@@ -19,7 +19,7 @@ class XHttpPoolHandle: NSObject,NSURLSessionDelegate
     private override init() {
         super.init()
     }
-
+    
     
     func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveData data: NSData) {
         
@@ -76,7 +76,7 @@ class XHttpPoolHandle: NSObject,NSURLSessionDelegate
     }
     
     func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, willCacheResponse proposedResponse: NSCachedURLResponse, completionHandler: (NSCachedURLResponse?) -> Void) {
-
+        
         let response = proposedResponse.response
         
         let HTTPResponse = response as? NSHTTPURLResponse
@@ -106,11 +106,11 @@ class XHttpPoolHandle: NSObject,NSURLSessionDelegate
     }
     
     func URLSession(session: NSURLSession, didBecomeInvalidWithError error: NSError?) {
-
+        
     }
     
     func URLSession(session: NSURLSession, didReceiveChallenge challenge: NSURLAuthenticationChallenge, completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void) {
-
+        
         //认证服务器（这里不使用服务器证书认证，只需地址是我们定义的几个地址即可信任）
         if challenge.protectionSpace.authenticationMethod
             == NSURLAuthenticationMethodServerTrust
@@ -156,7 +156,9 @@ class XHttpPoolHandle: NSObject,NSURLSessionDelegate
         {
             if(request.flag<0)
             {
-               request.progress(CGFloat(totalBytesSent)/CGFloat(totalBytesExpectedToSend)*CGFloat(100.0))
+                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                    request.progress(CGFloat(totalBytesSent)/CGFloat(totalBytesExpectedToSend)*CGFloat(100.0))
+                })
             }
         }
         

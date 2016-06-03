@@ -13,7 +13,7 @@ import Foundation
 import UIKit
 import SystemConfiguration
 
-
+typealias XHTMLBlock = (String)->Void
 typealias httpBlock = (Dictionary<String,AnyObject>)->Void
 typealias JsonBlock = (JSON?)->Void
 
@@ -33,13 +33,15 @@ class XHttpRequest: NSObject,NSURLConnectionDataDelegate{
     var httpMethod:HttpMethod = .GET
     lazy var jsonBlockArr:Array<JsonBlock> = []
     lazy var blockArr:Array<httpBlock> = []
+    lazy var htmlBlockArr:Array<XHTMLBlock> = []
     
     func success()->[String:AnyObject]
     {
         var dict:[String:AnyObject]=[:]
         var json:JSON? = nil
+        var html = ""
         
-        autoreleasepool { 
+        autoreleasepool {
             
             switch self.resultType
             {
@@ -66,7 +68,11 @@ class XHttpRequest: NSObject,NSURLConnectionDataDelegate{
                 
                 if(reciveData != nil)
                 {
-                    dict["HTML"]=NSString(data: reciveData!, encoding: NSUTF8StringEncoding) as! String
+                    if let str = NSString(data: reciveData!, encoding: NSUTF8StringEncoding) as? String
+                    {
+                        html = str
+                    }
+                    
                 }
                 
                 
@@ -82,6 +88,11 @@ class XHttpRequest: NSObject,NSURLConnectionDataDelegate{
             dict["HTTPURL"] = self.url
             
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                
+                for item in self.htmlBlockArr
+                {
+                    item(html)
+                }
                 
                 for item in self.jsonBlockArr
                 {
@@ -115,6 +126,13 @@ class XHttpRequest: NSObject,NSURLConnectionDataDelegate{
         jsonBlockArr.removeAll(keepCapacity: false)
         blockArr.removeAll(keepCapacity: false)
     }
+    
+    func requestHTML(url:String,body:AnyObject?,method:HttpMethod,block:XHTMLBlock)->Void
+    {
+        self.htmlBlockArr.append(block)
+        request(url, body: body, method: method, flag: 0)
+    }
+    
     
     func requestDict(url:String,body:AnyObject?,method:HttpMethod,block:httpBlock)->Void
     {
@@ -219,7 +237,7 @@ class XHttpRequest: NSObject,NSURLConnectionDataDelegate{
         runing = true
         let str = url.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())
         if str == nil {runing = false;return nil}
-
+        
         var data:NSData?
         
         if let requestURL = NSURL(string: str!)
@@ -276,7 +294,7 @@ class XHttpRequest: NSObject,NSURLConnectionDataDelegate{
         if u == nil {success(); return}
         
         let requestURL:NSURL=NSURL(string: u!)!
-
+        
         request = NSMutableURLRequest(URL: requestURL)
         
         request?.addValue(requestType.rawValue, forHTTPHeaderField: "Content-Type")
@@ -295,6 +313,8 @@ class XHttpRequest: NSObject,NSURLConnectionDataDelegate{
     {
         if(self.runing){return}
         runing=true
+        
+        print(url)
         
         self.task = XHttpPool.Share.session.dataTaskWithRequest(self.request!)
         
@@ -395,7 +415,7 @@ class XHttpRequest: NSObject,NSURLConnectionDataDelegate{
                 body.appendData(("\r\n--\(boundary)--\r\n").dataUsingEncoding(NSUTF8StringEncoding)!)
             }
         }
-
+        
         request!.HTTPBody=body
         
         self.startTask()
@@ -404,6 +424,7 @@ class XHttpRequest: NSObject,NSURLConnectionDataDelegate{
     
     deinit
     {
+        htmlBlockArr.removeAll(keepCapacity: false)
         jsonBlockArr.removeAll(keepCapacity: false)
         blockArr.removeAll(keepCapacity: false)
         task?.cancel()

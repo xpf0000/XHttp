@@ -18,9 +18,25 @@ extension Reflect{
         let data = obj ?? self.init()
         
         let path = pathWithName(obj: data, name: name)
-
-        NSKeyedArchiver.archiveRootObject(data, toFile: path)
-       
+        
+        if obj == nil
+        {
+            do
+            {
+                try NSFileManager.defaultManager().removeItemAtPath(path)
+            }
+            catch
+            {
+                print(name+" save fail !!!")
+            }
+            
+        }
+        else
+        {
+            NSKeyedArchiver.archiveRootObject(data, toFile: path)
+        }
+        
+        
         return path
     }
     
@@ -43,11 +59,11 @@ extension Reflect{
         return path
     }
     
-
+    
     class ArcFile {
-
+        
         static var cachesFolder: String? {return NSSearchPathForDirectoriesInDomains(NSSearchPathDirectory.CachesDirectory, NSSearchPathDomainMask.UserDomainMask, true).last}
     }
     
-    func ignoreCodingPropertiesForCoding() -> [String]? {return nil}
+    func excludedKey() -> [String]? {return nil}
 }

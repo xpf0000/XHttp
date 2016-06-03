@@ -11,7 +11,7 @@ import Foundation
 extension Reflect{static var classNameOfString: String {return "\(self)"}}
 
 func ClassFromString(str: String) -> AnyClass!{
-
+    
     if  var appName = NSBundle.mainBundle().objectForInfoDictionaryKey("CFBundleName") as? String {
         
         if appName == "" {appName = ((NSBundle.mainBundle().bundleIdentifier!).characters.split{$0 == "."}.map { String($0) }).last ?? ""}
@@ -21,7 +21,7 @@ func ClassFromString(str: String) -> AnyClass!{
         if !str.contain(subStr: "\(appName)."){
             clsStr = appName + "." + str
         }
-
+        
         let strArr = clsStr.explode(".")
         
         var className = ""
@@ -40,7 +40,7 @@ func ClassFromString(str: String) -> AnyClass!{
             className = nameStringM
             
         }else{
-           
+            
             className = clsStr
         }
         

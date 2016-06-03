@@ -13,7 +13,7 @@ import Foundation
 extension Reflect {
     
     override var description: String {
-    
+        
         let pointAddr = NSString(format: "%p",unsafeBitCast(self, Int.self)) as String
         
         var printStr = self.classNameString + " <\(pointAddr)>: " + "\r{"
@@ -29,7 +29,7 @@ extension Reflect {
                 printStr += "\r\(name): \(value)"
             }
         }
-    
+        
         printStr += "\r}"
         
         return printStr
@@ -53,7 +53,7 @@ extension String{
     }
     
     func deleteSpecialStr()->String{
-    
+        
         return self.replacingOccurrencesOfString("Optional<", withString: "").replacingOccurrencesOfString(">", withString: "")
     }
     

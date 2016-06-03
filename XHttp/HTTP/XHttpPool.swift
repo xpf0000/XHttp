@@ -4,7 +4,7 @@
 //
 //  Created by 徐鹏飞 on 15/3/14.
 //  Copyright (c) 2015年 swiftTest. All rights reserved.
-//  新版网络请求库 全部使用URLSession  
+//  新版网络请求库 全部使用URLSession
 //  实现目标:
 //  1.无内存泄漏
 //  2.节约资源。同一个url。get请求应该同一时间只有一个任务在跑，通过多个block或者代理分发。post等无法通过url区分的待定。
@@ -108,7 +108,7 @@ class XHttpPool:NSObject
                 NSHTTPCookieStorage.sharedHTTPCookieStorage().deleteCookie(cookie)
             }
         }
-
+        
     }
     
     func networkStatusChanged(notification: NSNotification) {
@@ -128,7 +128,7 @@ class XHttpPool:NSObject
         }
         
     }
-
+    
     func getRequestWithTask(task:NSURLSessionTask)->XHttpRequest?
     {
         for (_,value) in self.httpArr
@@ -164,7 +164,7 @@ class XHttpPool:NSObject
             http = XHttpRequest()
             XHttpPool.Share.httpArr[url+"\(NSDate().timeIntervalSince1970)"]=http
         }
-
+        
         return http
     }
     
@@ -179,7 +179,7 @@ class XHttpPool:NSObject
                 httpArr.removeValueForKey(key)
             }
         }
-
+        
     }
     
     //以下为请求方法  有返回值的为同步方法  带auto的为自动诊断网络状况 无网的时候请求,会在网络连接上后自动请求数据 暂不考虑后台请求问题
@@ -198,7 +198,15 @@ class XHttpPool:NSObject
         let http = XHttpRequest()
         return http.synchForJson(url, body: body, method: method)
     }
-
+    
+    class func requestHTML(url:String,body:AnyObject?,method:HttpMethod,block:XHTMLBlock)->Void
+    {
+        CheckNet()
+        
+        let http = getRequestWithUrl(url, hasBody: body != nil)
+        http.resultType = .Html
+        http.requestHTML(url, body: body, method: method, block: block)
+    }
     
     class func requestDict(url:String,body:AnyObject?,method:HttpMethod,block:httpBlock)->Void
     {
@@ -221,7 +229,7 @@ class XHttpPool:NSObject
     class func requestDictAutoConnect(url:String,body:AnyObject?,method:HttpMethod,block:httpBlock)->Void
     {
         let http = getRequestWithUrl(url, hasBody: body != nil)
-
+        
         if(!CheckNet())
         {
             if(!XHttpPool.Share.httpWaitIngArr.contains(http))

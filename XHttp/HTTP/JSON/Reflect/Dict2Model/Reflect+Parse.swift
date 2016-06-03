@@ -12,7 +12,7 @@ import Foundation
 extension Reflect{
     
     class func parsePlist(name: String) -> Self?{
-    
+        
         let path = NSBundle.mainBundle().pathForResource(name+".plist", ofType: nil)
         
         if path == nil {return nil}
@@ -50,11 +50,11 @@ extension Reflect{
         let ignoreProperties = model.ignorePropertiesForParse()
         
         model.properties { (name, type, value) -> Void in
-
+            
             var dataDictHasKey=false
             var mappdictDictHasKey=false
             var needIgnore=false
-
+            
             if(replace?[name] != nil)
             {
                 dataDictHasKey = json![replace![name]!] != nil
@@ -81,13 +81,33 @@ extension Reflect{
                 if !type.isArray {
                     
                     if !type.isReflect {
-                    
-                        model.setValue(json![key].object, forKeyPath: name)
+                        
+                        switch type.realType
+                        {
+                        case .String:
+                            model.setValue(json![key].stringValue, forKeyPath: name)
+                            
+                        case .Int:
+                            model.setValue(json![key].intValue, forKeyPath: name)
+                            
+                        case .Float:
+                            model.setValue(json![key].floatValue, forKeyPath: name)
+                            
+                        case .Double:
+                            model.setValue(json![key].doubleValue, forKeyPath: name)
+                            
+                        case .Bool:
+                            model.setValue(json![key].boolValue, forKeyPath: name)
+                            
+                        default:
+                            model.setValue(json![key].object, forKeyPath: name)
+                            
+                        }
                         
                     }else{
                         
                         model.setValue((type.typeClass as! Reflect.Type).parse(json: json![key],replace: replace), forKeyPath: name)
-  
+                        
                     }
                     
                 }else{
@@ -98,23 +118,23 @@ extension Reflect{
                         
                         if res is Int.Type {
                             
-                            arrAggregate = parseAggregateArray(json![key], basicType: ReflectType.BasicType.Int, ins: 0)
+                            arrAggregate = parseAggregateArray(json![key], basicType: ReflectType.BasicType.Int, ins: Int(0))
                             
                         }else if res is Float.Type {
                             
-                            arrAggregate = parseAggregateArray(json![key], basicType: ReflectType.BasicType.Float, ins: 0)
+                            arrAggregate = parseAggregateArray(json![key], basicType: ReflectType.BasicType.Float, ins: Float(0))
                             
                         }else if res is Double.Type {
                             
-                            arrAggregate = parseAggregateArray(json![key], basicType: ReflectType.BasicType.Double, ins: 0)
+                            arrAggregate = parseAggregateArray(json![key], basicType: ReflectType.BasicType.Double, ins: Double(0))
                             
                         }else if res is String.Type {
                             
-                            arrAggregate = parseAggregateArray(json![key], basicType: ReflectType.BasicType.String, ins: 0)
+                            arrAggregate = parseAggregateArray(json![key], basicType: ReflectType.BasicType.String, ins: "")
                             
                         }else if res is NSNumber.Type {
                             
-                            arrAggregate = parseAggregateArray(json![key], basicType: ReflectType.BasicType.NSNumber, ins: 0)
+                            arrAggregate = parseAggregateArray(json![key], basicType: ReflectType.BasicType.NSNumber, ins: NSNumber())
                             
                         }else{
                             
@@ -155,7 +175,7 @@ extension Reflect{
         let mappingDict = model.mappingDict()
         
         let ignoreProperties = model.ignorePropertiesForParse()
-
+        
         model.properties { (name, type, value) -> Void in
             
             let dataDictHasKey = dict[name] != nil
@@ -163,7 +183,7 @@ extension Reflect{
             let needIgnore = ignoreProperties == nil ? false : (ignoreProperties!).contains(name)
             
             if (dataDictHasKey || mappdictDictHasKey) && !needIgnore {
-
+                
                 let key = mappdictDictHasKey ? mappingDict![name]! : name
                 
                 if !type.isArray {
@@ -183,7 +203,7 @@ extension Reflect{
                     if let res = type.isAggregate(){
                         
                         var arrAggregate = []
-        
+                        
                         if res is Int.Type {
                             arrAggregate = parseAggregateArray(dict[key] as! NSArray, basicType: ReflectType.BasicType.Int, ins: 0)
                         }else if res is Float.Type {
@@ -218,7 +238,7 @@ extension Reflect{
                         model.setValue(arrM, forKeyPath: name)
                     }
                 }
-
+                
             }
         }
         
@@ -233,20 +253,21 @@ extension Reflect{
         if jsonArr.count == 0 {return intArrM}
         
         for (_,subJson):(String, JSON) in jsonArr {
-           
+            
             var element: T = ins
-
+            
             if T.self is Int.Type {
                 element = subJson.intValue as! T
             }
             else if T.self is Float.Type {element = subJson.floatValue as! T}
             else if T.self is Double.Type {element = subJson.doubleValue as! T}
             else if T.self is NSNumber.Type {element = subJson.numberValue as! T}
+            else if T.self is String.Type {element = subJson.stringValue as! T}
             else{element = subJson as! T}
             
             
             intArrM.append(element)
-
+            
             
         }
         
@@ -266,7 +287,7 @@ extension Reflect{
             
             let v = "\(value)"
             
-
+            
             
             if T.self is Int.Type {
                 element = Int(Float(v)!) as! T
@@ -275,7 +296,7 @@ extension Reflect{
             else if T.self is Double.Type {element = v.doubleValue as! T}
             else if T.self is NSNumber.Type {element = NSNumber(double: v.doubleValue!) as! T}
             else{element = value as! T}
-
+            
             
             intArrM.append(element)
         }

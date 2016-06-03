@@ -13,7 +13,7 @@ extension Reflect{
     var classNameString: String {return "\(self.dynamicType)"}
     
     func properties(property: (name: String, type: ReflectType, value: Any) -> Void){
-
+        
         for p in mirror.children {
             
             //print(p)
@@ -23,7 +23,7 @@ extension Reflect{
             let v = p.value
             
             let reflectType = ReflectType(propertyMirrorType: Mirror(reflecting: v), belongType: self.dynamicType)
-                
+            
             property(name: propertyNameString , type: reflectType, value: v)
         }
     }

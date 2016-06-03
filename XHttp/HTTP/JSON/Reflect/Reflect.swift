@@ -10,8 +10,6 @@ import Foundation
 
 class Reflect: NSObject, NSCoding{
     
-    lazy var ExcludedKey:[String]=[]
-    
     lazy var mirror: Mirror = {Mirror(reflecting: self)}()
     
     required override init(){}
@@ -20,7 +18,7 @@ class Reflect: NSObject, NSCoding{
         
         self.init()
         
-        let ignorePropertiesForCoding = self.ignoreCodingPropertiesForCoding()
+        let ignorePropertiesForCoding = self.excludedKey()
         
         self.properties { (name, type, value) -> Void in
             assert(type.check(), "[Charlin Feng]: Property '\(name)' type can not be a '\(type.realType.rawValue)' Type,Please use 'NSNumber' instead!")
@@ -42,7 +40,54 @@ class Reflect: NSObject, NSCoding{
                 }
             }else{
                 
-                self.setValue(aDecoder.decodeObjectForKey(name), forKeyPath: name)
+                if let saveValue = aDecoder.decodeObjectForKey(name)
+                {
+                    switch type.realType
+                    {
+                    case .String:
+                        ""
+                        if let v = saveValue as? String
+                        {
+                            self.setValue(v, forKeyPath: name)
+                        }
+                        
+                    case .Int:
+                        ""
+                        if let v = saveValue as? Int
+                        {
+                            self.setValue(v, forKeyPath: name)
+                        }
+                        
+                    case .Float:
+                        ""
+                        if let v = saveValue as? Float
+                        {
+                            self.setValue(v, forKeyPath: name)
+                        }
+                        
+                    case .Double:
+                        ""
+                        if let v = saveValue as? Double
+                        {
+                            self.setValue(v, forKeyPath: name)
+                        }
+                        
+                    case .Bool:
+                        ""
+                        if let v = saveValue as? Bool
+                        {
+                            self.setValue(v, forKeyPath: name)
+                        }
+                        
+                    default:
+                        ""
+                        self.setValue(saveValue, forKeyPath: name)
+                    }
+                    
+                    
+                }
+                
+                
                 
             }
         }
@@ -51,11 +96,11 @@ class Reflect: NSObject, NSCoding{
     
     func encodeWithCoder(aCoder: NSCoder) {
         
-        let ignorePropertiesForCoding = self.ignoreCodingPropertiesForCoding()
+        let ignorePropertiesForCoding = self.excludedKey()
         
         self.properties { (name, type, value) -> Void in
             
-            if(name.rangeOfString(".storage") != nil || self.ExcludedKey.contains(name))
+            if(name.rangeOfString(".storage") != nil)
             {
                 return
             }
